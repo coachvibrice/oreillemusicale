@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2f5bea">
+<link rel="icon" type="image/png" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Oreille musicale</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#e8edf5;--surf:#fff;--ink:#16203a;--mute:#5b6784;--acc:#2f5bea;--accink:#fff;--ok:#1f9d55;--ko:#d6393f;--line:#c9d2e3;--white:#fbfbf8;--black:#151a2b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1222;--surf:#171d34;--ink:#e9eeff;--mute:#9aa6c7;--acc:#6f95ff;--accink:#0e1222;--ok:#3ddc84;--ko:#ff6b72;--line:#2a3355;--white:#e9e6dc;--black:#05070f}}
+:root[data-theme="dark"]{--bg:#0e1222;--surf:#171d34;--ink:#e9eeff;--mute:#9aa6c7;--acc:#6f95ff;--accink:#0e1222;--ok:#3ddc84;--ko:#ff6b72;--line:#2a3355;--white:#e9e6dc;--black:#05070f}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Outfit",system-ui,sans-serif;min-height:100vh}
+main{max-width:880px;margin:0 auto;padding:16px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.mini{flex:none;min-height:40px;padding:6px 12px;font-size:.85rem}
+.modes{display:grid;gap:10px;margin:12px 0}.mode{display:grid;gap:4px;text-align:left;padding:14px 16px;border-radius:14px}.mode b{font-size:1.15rem}.mode span{color:var(--mute);font-weight:400}.mode em{font-style:normal;color:var(--acc);font-weight:700}
+.brand{display:flex;align-items:center;gap:10px;font-size:clamp(1.05rem,4.4vw,1.6rem);white-space:nowrap}
+.brand img{width:46px;height:46px;border-radius:12px;flex:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.st{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.st span{font-size:.78rem;color:var(--mute);font-weight:600}
+.st b{font-size:1.3rem;font-weight:800}
+h1{margin:0;font-weight:800}
+
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:16px}
+.bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .4s}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:20px}
+.msg{font-size:1.4rem;font-weight:600;margin:0 0 6px;line-height:1.25}
+.sub{color:var(--mute);margin:0 0 18px;max-width:60ch}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--surf);color:var(--ink);padding:12px 18px;border-radius:12px;font-weight:600;min-height:48px}
+button.p{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,.k:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.kb{position:relative;display:flex;height:clamp(150px,24vh,300px);margin:18px 8px 10px;border-radius:6px;box-shadow:0 0 0 8px #151a2e,0 10px 26px #0007;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.k{font:inherit;border:0;padding:0 0 14px;position:relative;display:flex;align-items:flex-end;justify-content:center;font-size:clamp(.8rem,2.6vw,1.05rem);font-weight:700;min-height:0;cursor:pointer;transition:transform .06s,filter .06s}
+.k:active:not(:disabled){transform:translateY(4px);filter:brightness(.9)}
+.k.w{flex:1;background:linear-gradient(#fff,var(--white));color:#16203a;border-radius:0 0 12px 12px;box-shadow:inset 0 -8px 0 #cdcabe,inset -1px 0 #0003}
+.k.b{position:absolute;top:0;width:7.5%;height:60%;background:linear-gradient(#2d3354,var(--black));color:#e9eeff;z-index:2;border-radius:0 0 9px 9px;font-size:clamp(.6rem,1.9vw,.8rem);padding-bottom:10px;box-shadow:inset 0 -7px 0 #000a,0 5px 9px #0008}
+.k:disabled{opacity:.35;cursor:default}
+.inp{width:100%;font:inherit;font-size:1.1rem;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);min-height:52px;margin:6px 0}
+.cgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}
+.ct{aspect-ratio:1;padding:0;display:grid;place-items:center;align-content:center;font-weight:800;font-size:1.2rem;line-height:1.1;min-height:0}
+.ct small{font-size:.7rem;font-weight:600;color:var(--mute)}
+.ct.ok{border-color:var(--ok);color:var(--ok)}
+.ct.cur{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.k.ok{background:var(--ok)!important;color:#fff!important}
+.k.ko{background:var(--ko)!important;color:#fff!important}
+.k.on{background:var(--acc)!important;color:var(--accink)!important}
+.slots{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.slot small{display:block;font-size:.7rem;font-weight:600;color:var(--mute)}.slot.fill{border-style:solid;border-color:var(--acc)}
+.slot{min-width:64px;padding:10px 12px;border:2px dashed var(--line);border-radius:12px;text-align:center;font-weight:800}
+.slot.ok{border-style:solid;border-color:var(--ok);color:var(--ok)}
+.slot.ko{border-style:solid;border-color:var(--ko);color:var(--ko)}
+.dots{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.dot{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;border:2px solid var(--line);font-weight:700;font-size:.85rem}
+.dot.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.dot.cur{border-color:var(--acc)}
+.fb{min-height:1.6em;font-weight:800;font-size:1.3rem;margin:8px 0}
+.fb.ok{color:var(--ok)}.fb.ko{color:var(--ko)}
+.tm{display:flex;align-items:center;gap:10px;margin:10px 0 0}.tm div{flex:1;height:10px;background:var(--line);border-radius:5px;overflow:hidden}.tm i{display:block;height:100%;width:100%;background:var(--acc);transition:width .1s linear}.tm span{font-weight:800;min-width:3.5ch;text-align:right}
+.vn{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.vn span{padding:10px 12px;border:2px solid var(--line);border-radius:12px;font-weight:800;min-width:56px;text-align:center;transition:background .08s,color .08s,transform .08s}.vn span.on{background:var(--acc);color:var(--accink);border-color:var(--acc);transform:scale(1.08)}.vn span.hi{border-color:var(--acc)}
+.vc{display:grid;gap:6px;margin:14px 0}.vc label{font-weight:700;display:flex;justify-content:space-between;align-items:center}.vc input[type=range]{width:100%;height:36px;accent-color:var(--acc)}
+.vt{display:flex;align-items:center;gap:10px}.vt button{min-width:52px;padding:10px 0;font-size:1.3rem}.vt input{flex:1}
+.beat{width:16px;height:16px;border-radius:50%;background:var(--line);display:inline-block;vertical-align:middle;margin-left:8px;transition:background .05s}.beat.on{background:var(--ok)}
+.seg{display:flex;gap:8px;flex-wrap:wrap}.seg button{flex:1;min-width:130px}.seg button.sel{background:var(--acc);color:var(--accink);border-color:var(--acc)}
+.vh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px}.vh .msg{margin:0}.vh button{min-height:40px;padding:8px 12px;flex:none}
+.sheet{position:fixed;inset:0;background:rgba(5,8,20,.55);display:flex;align-items:flex-end;justify-content:center;z-index:50}.sheet[hidden]{display:none}
+.sheetc{background:var(--surf);color:var(--ink);width:min(560px,100%);max-height:90vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom))}
+.seg.t button{min-width:0;padding:10px 4px}
+header{flex-wrap:wrap}.hb{display:flex;gap:6px}.brand{min-width:0}
+.vrow{display:flex;gap:10px;justify-content:center;align-items:stretch;flex-wrap:nowrap;margin:14px 0}.vrow>*{flex:1 1 0;min-width:0;max-width:210px}.vrow select.inp{margin:0;padding:10px 12px;min-height:48px;font-size:1rem;font-weight:700}.vrow button{padding:12px 8px}
+.tb{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}.tb button{min-height:44px;padding:8px 9px;font-size:.88rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.hero{display:block;width:min(46vw,200px);height:auto;margin:0 auto 14px}
+</style>
+</head>
+<body>
+<main>
+<header><h1 class="brand"><img src="icons/icon-192.png" alt="" width="46" height="46">Oreille Musicale</h1><div class="hb"><button id="hm" class="mini" type="button">🏠 Accueil</button><button id="rst" class="mini" type="button" aria-label="Recommencer" title="Recommencer">↺</button></div></header>
+<div class="stats" id="stats"><div class="st"><span>Niveau</span><b id="sl">1/20</b></div><div class="st"><span>Manche</span><b id="sr">1/3</b></div><div class="st"><span>Points</span><b id="sp">0</b></div></div>
+<div class="bar"><i id="pg"></i></div>
+<section class="card" id="app"></section>
+</main>
+<script>
+/* ===== Publicité AdMob : vidéos avec récompense (application Android seulement) ===== */
+const ADS={
+  test:true, /* true = pubs de TEST de Google (obligatoire pendant tes essais). Mets false seulement pour la version publiée. */
+  rewardedId:"REMPLACE_PAR_TON_ID_BLOC_RECOMPENSE", /* ex. ca-app-pub-XXXXXXXXXXXXXXXX/YYYYYYYYYY (créé dans AdMob) */
+  testId:"ca-app-pub-3940256099942544/5224354917",  /* ID de test officiel de Google */
+  exFrom:3, exVideos:1,     /* à partir de l’exercice 3 : 1 vidéo avant de commencer chaque exercice */
+  certFrom:5, certVideos:1, /* à partir de l’exercice 5 : 1 vidéo pour télécharger l’attestation (une seule fois par attestation) */
+  voiceFrom:4, voiceEvery:3, voiceVideos:1, /* « Travaille ta voix » : 1 vidéo avant les exercices 4, 7, 10, 13… (seulement ceux pas encore réussis) */
+  bannerId:"REMPLACE_PAR_TON_ID_BLOC_BANNIERE", /* ex. ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ (bloc Bannière créé dans AdMob) */
+  bannerTestId:"ca-app-pub-3940256099942544/9214589741" /* ID de test officiel de Google */
+};
+const adPlugin=()=>{const c=window.Capacitor;if(!c||!c.isNativePlatform||!c.isNativePlatform())return null;try{return c.registerPlugin("AdMob")}catch(e){return null}};
+const adUnit=()=>(ADS.test||ADS.rewardedId.indexOf("REMPLACE")===0)?ADS.testId:ADS.rewardedId;
+async function adInitRun(){
+  const P=adPlugin();if(!P)return;
+  try{
+    await P.initialize({initializeForTesting:ADS.test});
+    const ci=await P.requestConsentInfo();
+    if(ci&&ci.isConsentFormAvailable&&ci.status==="REQUIRED")await P.showConsentForm();
+  }catch(e){}
+}
+const adInit=()=>(adReady=adInitRun());
+/* Résultat : "ok" (vidéo regardée jusqu’au bout), "skip" (fermée trop tôt), "fail" (pas de pub disponible), "none" (pas Android) */
+function watchVideo(){
+  const P=adPlugin();if(!P)return Promise.resolve("none");
+  return new Promise(async res=>{
+    let rewarded=false,done=false;const hs=[];
+    const fin=v=>{if(done)return;done=true;hs.forEach(h=>{try{h.remove()}catch(e){}});res(v)};
+    try{
+      hs.push(await P.addListener("onRewardedVideoAdReward",()=>{rewarded=true}));
+      hs.push(await P.addListener("onRewardedVideoAdDismissed",()=>fin(rewarded?"ok":"skip")));
+      hs.push(await P.addListener("onRewardedVideoAdFailedToLoad",()=>fin("fail")));
+      hs.push(await P.addListener("onRewardedVideoAdFailedToShow",()=>fin("fail")));
+      await P.prepareRewardVideoAd({adId:adUnit(),isTesting:ADS.test});
+      await P.showRewardVideoAd();
+    }catch(e){fin("fail")}
+  });
+}
+/* Écran « regarde n vidéo(s) pour continuer ». S’il n’y a pas de pub disponible, l’utilisateur n’est jamais bloqué. */
+function adGate(n,title,text,onDone,onBack){
+  let seen=0;
+  const paint=(msg,bad)=>{
+    $("app").innerHTML='<p class="msg">'+title+'</p><p class="sub">'+text+'</p><p class="sub"><strong>Vidéo '+Math.min(seen+1,n)+' sur '+n+'</strong></p><div class="row"><button class="p" id="adgo">▶ Regarder la vidéo</button><button id="adbk">Retour</button></div><div class="fb'+(bad?' ko':'')+'" id="admsg">'+(msg||"")+'</div>';
+    $("adgo").onclick=run;$("adbk").onclick=onBack;
+  };
+  const run=async()=>{
+    const b=$("adgo");if(b){b.disabled=true;b.textContent="Chargement de la vidéo…"}
+    const r=await watchVideo();
+    if(r==="ok"){seen++;if(seen>=n){onDone();return}paint("Bravo, encore "+(n-seen)+" vidéo"+(n-seen>1?"s":"")+".",false);return}
+    if(r==="skip"){paint("Regarde la vidéo jusqu’à la fin pour continuer.",true);return}
+    onDone(); /* "fail" ou "none" : pas de pub disponible, on laisse continuer */
+  };
+  paint("",false);
+}
+const exAd={};
+/* Bannière en bas de l’écran d’accueil seulement (cachée pendant les exercices) */
+let adReady=null,bannerOn=false,bannerLive=false;
+const bannerUnit=()=>(ADS.test||ADS.bannerId.indexOf("REMPLACE")===0)?ADS.bannerTestId:ADS.bannerId;
+async function bannerShow(){
+  const P=adPlugin();if(!P)return;
+  try{
+    await adReady;if(bannerOn)return;bannerOn=true;
+    if(bannerLive){await P.resumeBanner()}
+    else{
+      await P.addListener("bannerAdSizeChanged",i=>{if(bannerOn&&i&&i.height)document.body.style.paddingBottom=i.height+"px"});
+      await P.showBanner({adId:bannerUnit(),adSize:"ADAPTIVE_BANNER",position:"BOTTOM_CENTER",margin:0,isTesting:ADS.test});bannerLive=true;
+    }
+  }catch(e){bannerOn=false}
+}
+async function bannerHide(){
+  const P=adPlugin();if(!P||!bannerOn)return;
+  bannerOn=false;document.body.style.paddingBottom="";
+  try{await P.hideBanner()}catch(e){}
+}
+const NOM=["Do","Do♯","Ré","Ré♯","Mi","Fa","Fa♯","Sol","Sol♯","La","La♯","Si","Do"];
+const MAX=10;
+let level=1,ctx,busy=false,R=null,round=1,mode="facile",levels={},chal=null,voice=null,vx=[],vcnt={},ch={name:"",done:0,dates:{}},tries=0,score=0,best=0,streak=0,lastDay="";
+const roundsOf=l=>chal?(mode==="difficile"?2:3):(mode==="difficile"?1:3);
+try{const S=JSON.parse(localStorage.getItem("om-state")||"{}");levels=S.levels||{};if(S.ch)ch=Object.assign(ch,S.ch);if(Array.isArray(S.vx2))vx=S.vx2;if(S.vcnt&&typeof S.vcnt==='object')vcnt=S.vcnt;score=S.score||0;best=S.best||0;streak=S.streak||0;lastDay=S.lastDay||""}catch(e){}
+function save(){best=Math.max(best,score);try{localStorage.setItem("om-state",JSON.stringify({levels:(chal||(levels[mode]=level),levels),score,best,streak,lastDay,ch,vx2:vx,vcnt}))}catch(e){}}
+function markDay(){const d=new Date().toISOString().slice(0,10);if(lastDay!==d){const y=new Date(Date.now()-864e5).toISOString().slice(0,10);streak=lastDay===y?streak+1:1;lastDay=d}}
+const $=id=>document.getElementById(id);
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+
+function cfg(l){
+  const pent=[0,2,4,5,7],maj=[0,2,4,5,7,9,11],chro=[0,1,2,3,4,5,6,7,8,9,10,11,12];
+  if(mode==="facile")return{t:"gap",n:5,k:1,pool:l<=3?pent:l<=6?maj:chro};
+  if(mode==="inter")return{t:"gap",n:6,k:2,pool:l<=3?maj:chro};
+  return{t:"sing",n:l<=2?4:l<=4?5:l<=6?6:l<=8?7:8,pool:maj};
+}
+let master=null,vol=.8;
+try{const v=parseFloat(localStorage.getItem("om-vol"));if(v>=0&&v<=1)vol=v}catch(e){}
+function audio(){
+  ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();
+  if(ctx.state==="suspended")ctx.resume();
+  if(!master){master=ctx.createGain();master.gain.value=vol;const cp=ctx.createDynamicsCompressor();cp.threshold.value=-14;cp.ratio.value=4;master.connect(cp);cp.connect(ctx.destination)}
+  return ctx;
+}
+function setVol(v){vol=v;try{localStorage.setItem("om-vol",String(v))}catch(e){}if(master)master.gain.value=v}
+/* Son de piano : harmoniques qui s’éteignent à des vitesses différentes, cordes légèrement désaccordées, filtre qui s’adoucit */
+function piano(s,t,d,dest){
+  const f=261.63*Math.pow(2,s/12),out=ctx.createGain(),lp=ctx.createBiquadFilter();
+  lp.type="lowpass";lp.Q.value=.4;lp.frequency.setValueAtTime(Math.min(9000,f*16),t);lp.frequency.setTargetAtTime(Math.max(900,f*3.2),t,.5);
+  out.gain.setValueAtTime(0,t);out.gain.linearRampToValueAtTime(.5,t+.006);out.gain.setTargetAtTime(.16,t+.006,.55);
+  out.gain.setTargetAtTime(0,t+d,.14);
+  lp.connect(out);out.connect(dest||master);
+  const end=t+d+1.1;
+  [[1,1,0],[1,.55,5],[2,.5,0],[3,.3,0],[4,.18,0],[5,.1,0],[6,.06,0],[8,.03,0]].forEach(([m,a,c])=>{
+    const o=ctx.createOscillator(),h=ctx.createGain();o.type="sine";o.frequency.value=f*m;o.detune.value=c;
+    h.gain.setValueAtTime(a,t);h.gain.setTargetAtTime(a*.12,t,.9/Math.sqrt(m));
+    o.connect(h);h.connect(lp);o.start(t);o.stop(end);
+  });
+  /* petit bruit de marteau */
+  const nb=ctx.createBufferSource(),len=Math.floor(ctx.sampleRate*.03),buf=ctx.createBuffer(1,len,ctx.sampleRate),dt=buf.getChannelData(0);
+  for(let i=0;i<len;i++)dt[i]=(Math.random()*2-1)*(1-i/len);
+  nb.buffer=buf;const ng=ctx.createGain();ng.gain.value=.07;nb.connect(ng);ng.connect(out);nb.start(t);
+}
+function tone(s){audio();piano(s,ctx.currentTime+.01,.85,master)}
+function click(t,acc,dest){
+  const o=ctx.createOscillator(),g=ctx.createGain();o.type="triangle";o.frequency.value=acc?1700:1150;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(acc?.9:.6,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.06);
+  o.connect(g);g.connect(dest||master);o.start(t);o.stop(t+.08);
+}
+let epoch=0;
+async function playSeq(seq,gap=650,hl=false){
+  const e=epoch;for(const s of seq){if(e!==epoch)return;if(s===null){await sleep(gap);continue}tone(s);if(hl)flash(s);await sleep(gap)}
+}
+function flash(s){const k=document.querySelector('[data-s="'+s+'"]');if(!k)return;k.classList.add("on");setTimeout(()=>k.classList.remove("on"),400)}
+function setBusy(b){busy=b;document.querySelectorAll("#app button").forEach(x=>{if(x.dataset.keep!=="1"&&!x.classList.contains("k"))x.disabled=b})}
+
+function keyboard(pool){
+  const W=[0,2,4,5,7,9,11,12],B={1:0,3:1,6:3,8:4,10:5};
+  let h='<div class="kb" id="kb" role="group" aria-label="Clavier">';
+  W.forEach(s=>h+='<button class="k w" data-s="'+s+'" '+(pool.includes(s)?'':'disabled')+'>'+NOM[s]+'</button>');
+  for(const s in B)h+='<button class="k b" style="left:calc('+((B[s]+1)*12.5)+'% - 3.5%)" data-s="'+s+'" '+(pool.includes(+s)?'':'disabled')+'>'+NOM[s]+'</button>';
+  return h+'</div>';
+}
+function enableKeys(on){document.querySelectorAll(".k").forEach(k=>{const p=R.pool.includes(+k.dataset.s);k.disabled=!(on&&p)})}
+let tId=null,tLeft=0,tMax=0,over=false;
+const limitOf=()=>R.k===1?10:15;
+function paint(){const b=$("tmb"),n=$("tmn");if(!b)return;b.style.width=(tLeft/tMax*100)+"%";n.textContent=Math.ceil(tLeft)+" s";b.style.background=tLeft<tMax*.3?"var(--ko)":"var(--acc)"}
+function timerStop(){if(tId){clearInterval(tId);tId=null}}
+function timerRun(){timerStop();tId=setInterval(()=>{tLeft=Math.max(0,tLeft-.1);paint();if(tLeft<=0)timeUp()},100)}
+function timerStart(){over=false;tMax=tLeft=limitOf();paint();timerRun()}
+function timeUp(){
+  timerStop();enableKeys(false);
+  if(R.t==="id")document.querySelector('.k[data-s="'+R.target+'"]').classList.add("ok");
+  else for(let i=R.ans.length;i<R.k;i++){const sl=$("s"+i);sl.textContent=NOM[R.seq[R.miss[i]]];sl.className="slot ko"}
+  verdict(false);$("fb").textContent="Temps écoulé. Écoute encore et réessaie.";
+}
+function showStats(on=true){if(voice)on=false;$("stats").style.visibility=on?"visible":"hidden";if(on){$("sl").textContent=chal?chal+"/30":level+"/"+MAX;$("sr").textContent=round+"/"+roundsOf(level);document.querySelector("#stats .st span").textContent=chal?"Exercice":"Niveau";$("sp").textContent=score}}
+function head(){
+  showStats();$("pg").style.width=(voice?(voice-1)/30*100:chal?(chal-1)/30*100:((level-1)+(round-1)/roundsOf(level))/MAX*100)+"%";
+  save();
+}
+function seen(){try{return localStorage.getItem("om-rules")==="1"}catch(e){return false}}
+function rules(play){
+  showStats(false);$("pg").style.width="0";
+  $("app").innerHTML='<p class="msg">Comment jouer</p>'
+  +'<p class="sub"><strong>Challenge 30 jours.</strong> Les exercices 1 à 10 sont Faciles, 11 à 20 Intermédiaires, 21 à 30 Difficiles. Tu reçois une attestation à chaque exercice réussi.</p>'
+  +'<p class="sub"><strong>Facile.</strong> Tu entends 5 notes, deux fois de suite. Elles sont ensuite rejouées avec une note manquante : touche-la sur le clavier. Vert : bonne réponse. Rouge : erreur.</p>'
+  +'<p class="sub"><strong>Intermédiaire.</strong> Tu entends 6 notes, puis elles sont rejouées avec deux notes manquantes. Touche-les dans l’ordre.</p>'
+  +'<p class="sub"><strong>Difficile.</strong> Tu entends une courte mélodie. Reproduis-la dans l’ordre : chante-la avec le bouton Chanter (autorise le micro), ou touche les notes sur le clavier. Quand toutes les notes sont données, chaque note juste est cochée en vert et chaque fausse note passe en rouge.</p>'
+  +'<p class="sub"><strong>Manches, chrono et points.</strong> Chaque exercice du challenge compte 3 manches (2 en Difficile). Le chrono démarre après les écoutes, et tu peux réécouter. Réussir du premier coup rapporte 10 points, après une erreur 5 points, et répondre vite ajoute 3 points.</p>'
+  +'<div class="row"><button class="p" id="ok">'+(play?'J’ai compris, jouer':'J’ai compris')+'</button>'+(play?'<button id="bk">Retour</button>':'')+'</div>';
+  $("ok").onclick=()=>{try{localStorage.setItem("om-rules","1")}catch(e){}if(play){round=1;tries=0;start()}else home()};
+  if($("bk"))$("bk").onclick=home;
+}
+const _MODES_UNUSED={facile:["Facile","5 notes sont jouées, puis rejouées avec 1 note manquante à retrouver."],inter:["Intermédiaire","6 notes sont jouées, puis rejouées avec 2 notes manquantes à retrouver."],difficile:["Difficile","Tu écoutes une mélodie, puis tu la chantes ou tu touches les notes sur le clavier."]};
+function home(){
+  epoch++;chal=null;voice=null;vStop();showStats(false);$("pg").style.width="0";
+  $("app").innerHTML='<img class="hero" src="icons/icon-512.png" alt="Logo Oreille Musicale" width="200" height="200"><p class="msg">Entraîne ton oreille, note après note.</p><p class="sub">Choisis ton parcours.</p><div class="modes"><button class="mode chal" id="vcb"><b>Travaille ta voix</b><span>100 exercices avec piano, tempo et métronome : chante avec le piano pour travailler la justesse, la précision et le souffle.</span><em>'+vx.length+' / '+VN+' faits</em></button><button class="mode" id="chb"><b>Challenge 30 jours</b><span>30 exercices du facile au difficile, avec une attestation JPEG à chaque exercice réussi.</span><em>'+ch.done+' / 30 réussis</em></button></div><p class="sub">'+(streak>0?'Série : '+streak+' jour'+(streak>1?'s':'')+' de suite. ':'')+'Score : '+score+' points. Meilleur score : '+best+'.</p><div class="row"><button id="hw">Comment jouer ?</button></div>';
+  $("hw").onclick=()=>rules(false);$("chb").onclick=openChallenge;$("vcb").onclick=showVoice;
+}
+function start(){
+  head();const c=cfg(level);R={...c};
+  if(c.t==="gap"){
+    R.seq=shuffle(c.pool.filter(x=>x!==12)).slice(0,c.n);
+    R.miss=shuffle(R.seq.map((_,i)=>i)).slice(0,c.k).sort((a,b)=>a-b);R.ans=[];
+    R.msg="Écoute la suite de notes";
+    R.sub=chal?(c.k===1?"Je joue ensuite seulement la note à retrouver. Touche-la sur le clavier.":"Je joue ensuite seulement les deux notes à retrouver. Touche-les dans l’ordre."):c.k===1?"Je la rejoue avec une note manquante. Touche-la sur le clavier.":"Je la rejoue avec deux notes manquantes. Touche-les dans l’ordre.";
+  }else{R.mel=melody(c.n);R.got=[];R.over=false;R.msg="Écoute la mélodie";R.sub="Puis chante-la (le micro détecte ta voix, sans enregistrement) ou touche les notes sur le clavier, dans l’ordre."}
+  draw();
+}
+function melody(n){const m=[0,2,4,5,7,9,11];let i=[0,2,4][Math.random()*3|0],o=[i];while(o.length<n){let st=[-2,-1,1,2][Math.random()*4|0];let j=Math.min(6,Math.max(0,o[o.length-1]+st));o.push(j)}return o.map(x=>m[x])}
+function draw(){
+  head();
+  let h='<p class="msg" id="m">'+R.msg+'</p><p class="sub" id="s">'+R.sub+'</p>';
+  if(R.t==="sing"){h+='<div class="slots">'+R.mel.map((_,i)=>'<div class="slot" id="d'+i+'">?</div>').join("")+'</div><div class="row"><button class="p" id="hear">▶ Écouter la mélodie</button><button id="mic">🎤 Chanter</button><button id="undo" data-keep="1">⌫ Effacer</button>'+'</div>'}
+  else{
+    if(R.t==="gap")h+='<div class="slots">'+R.miss.map((_,i)=>'<div class="slot" id="s'+i+'">?</div>').join("")+'</div>';
+    h+='<div class="row"><button class="p" id="hear">▶ Écouter</button><button id="again" data-keep="1" disabled>↻ Réécouter</button></div><div class="tm"><div><i id="tmb"></i></div><span id="tmn"></span></div>'+keyboard(R.pool);
+  }
+  if(R.t==="sing")h+=keyboard(R.pool);
+  h+='<div class="fb" id="fb" aria-live="polite"></div>';
+  $("app").innerHTML=h;
+  enableKeys(false);
+  $("hear").onclick=listen;
+  document.querySelectorAll(".k").forEach(k=>{k.onpointerdown=e=>{e.preventDefault();press(+k.dataset.s)};k.onclick=e=>{if(e.detail===0)press(+k.dataset.s)}});
+  if(R.t==="sing"){$("mic").onclick=sing;$("undo").onclick=undoNote}else $("again").onclick=()=>R.t==="id"?tone(R.target):replayGap();
+}
+async function listen(){
+  const e0=epoch;const gone=()=>e0!==epoch;setBusy(true);const fb=$("fb");fb.textContent="";fb.className="fb";
+  if(R.t==="id"){
+    await playSeq(R.seq,650,true);if(gone())return;$("m").textContent="Deuxième écoute";await sleep(1000);if(gone())return;await playSeq(R.seq,650,true);if(gone())return;$("m").textContent="Quelle est cette note ?";await sleep(500);if(gone())return;tone(R.target);
+  }else if(R.t==="gap"){await playSeq(R.seq,600,true);if(gone())return;$("m").textContent="Deuxième écoute";await sleep(1000);if(gone())return;await playSeq(R.seq,600,true);if(gone())return;$("m").textContent="Quelles notes manquent ?";await sleep(400);if(gone())return;await replayGap(true);if(gone())return}
+  else{await playSeq(R.mel,600,false);if(gone())return;$("m").textContent="À toi : chante ou touche les notes";}
+  setBusy(false);
+  if(R.t!=="sing"){enableKeys(true);$("again").disabled=false;$("hear").disabled=true;timerStart()}else enableKeys(true)
+}
+async function replayGap(init){
+  if(!init)timerStop();enableKeys(false);const q=R.seq.map((s,i)=>R.miss.includes(i)?null:s);
+  if(chal)await playSeq(R.miss.map(i=>R.seq[i]),900,false);else await playSeq(q,600,true);if(!over)enableKeys(R.ans.length<R.k);if(!init&&!over)timerRun();
+}
+function press(s){
+  if(busy)return;tone(s,.35);try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}
+  if(R.t==="sing"){addNote(s);return}
+  const k=document.querySelector('.k[data-s="'+s+'"]');
+  if(R.t==="id"){
+    const good=s===R.target;enableKeys(false);
+    k.classList.add(good?"ok":"ko");
+    if(!good)document.querySelector('.k[data-s="'+R.target+'"]').classList.add("ok");
+    verdict(good);
+  }else{
+    const i=R.ans.length,want=R.seq[R.miss[i]],good=s===want,sl=$("s"+i);
+    sl.textContent=NOM[s];sl.className="slot "+(good?"ok":"ko");R.ans.push(s);
+    if(!good){sl.textContent=NOM[s]+" ≠ "+NOM[want];enableKeys(false);verdict(false);return}
+    if(R.ans.length===R.k){enableKeys(false);verdict(true)}
+  }
+}
+function verdict(good){
+  const fb=$("fb");fb.className="fb "+(good?"ok":"ko");
+  timerStop();over=true;const last=round>=roundsOf(level),fast=good&&R.t!=="sing"&&tLeft>tMax*.5,pts=(tries?5:10)+(fast?3:0);
+  if(good){score+=pts;markDay();save()}else tries++;
+  fb.textContent=good?"Bravo ! +"+pts+" points"+(fast?" (bonus rapidité)":""):"Pas tout à fait. Écoute encore et réessaie.";
+  showStats();
+  if(chal){chalAfter(good);return}
+  const r=document.createElement("div");r.className="row";
+  r.innerHTML=good?'<button class="p" id="nx" data-keep="1">'+(last?(level>=MAX?'Terminer':'Niveau suivant'):'Manche suivante')+'</button>':'<button class="p" id="rt" data-keep="1">Réessayer cette manche</button>';
+  $("app").appendChild(r);
+  if(good)$("nx").onclick=()=>{tries=0;if(!last){round++;start()}else{round=1;if(level>=MAX){level=1;done()}else{level++;start()}}};else $("rt").onclick=start;
+}
+function done(){showStats(false);$("pg").style.width="100%";$("app").innerHTML='<p class="msg">Parcours terminé. Bravo !</p><p class="sub">Tu as terminé les 10 niveaux de ce mode avec '+score+' points. Reviens t’entraîner pour affiner ton oreille.'+(streak>1?' Série en cours : '+streak+' jours.':'')+'</p><div class="row"><button class="p" id="go">Choisir un niveau</button></div>';$("go").onclick=home}
+
+/* Chant : détection de hauteur par autocorrélation */
+function addNote(n){
+  if(R.over||R.got.length>=R.mel.length)return;
+  R.got.push(n%12);const sl=$("d"+(R.got.length-1));sl.textContent=NOM[n%12];sl.className="slot fill";
+  if(R.got.length===R.mel.length)checkSing();
+}
+function undoNote(){if(R.over||!R.got.length)return;R.got.pop();const sl=$("d"+R.got.length);sl.textContent="?";sl.className="slot"}
+function checkSing(){
+  R.over=true;stopMic();enableKeys(false);let all=true;
+  R.mel.forEach((m,i)=>{const sl=$("d"+i),ok=R.got[i]===m%12;if(!ok)all=false;sl.className="slot "+(ok?"ok":"ko");sl.innerHTML=(ok?"✓ ":"✗ ")+NOM[R.got[i]]+(ok?"":"<small>attendu : "+NOM[m]+"</small>")});
+  verdict(all);
+}
+let stopMic=()=>{};
+async function sing(){
+  if(R.over)return;let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}
+  catch(e){$("fb").className="fb ko";$("fb").textContent="Micro inaccessible. Autorise le micro, ou touche les notes sur le clavier.";return}
+  ctx=ctx||new (window.AudioContext||window.webkitAudioContext)();await ctx.resume();
+  const an=ctx.createAnalyser();an.fftSize=2048;ctx.createMediaStreamSource(stream).connect(an);
+  const buf=new Float32Array(an.fftSize);let last=-1,run=0,added=-1,silent=true,live=true;
+  const mic=$("mic");mic.textContent="⏹ Arrêter";
+  stopMic=()=>{if(!live)return;live=false;stream.getTracks().forEach(t=>t.stop());mic.textContent="🎤 Chanter";mic.onclick=sing};
+  mic.onclick=()=>stopMic();$("m").textContent="Chante les notes une par une";$("fb").textContent="";
+  function pitch(){
+    an.getFloatTimeDomainData(buf);let rms=0;for(const v of buf)rms+=v*v;rms=Math.sqrt(rms/buf.length);
+    if(rms<.015)return null;
+    const sr=ctx.sampleRate,lo=Math.floor(sr/1000),hi=Math.floor(sr/80);let best=0,bl=-1;
+    for(let l=lo;l<hi;l++){let c=0;for(let i=0;i<buf.length-l;i+=2)c+=buf[i]*buf[i+l];if(c>best){best=c;bl=l}}
+    return bl>0?sr/bl:null;
+  }
+  (function loop(){
+    if(!live)return;const f=pitch();
+    if(f===null){silent=true;run=0;last=-1}
+    else{
+      const pc=((Math.round(69+12*Math.log2(f/440))%12)+12)%12;
+      if(pc!==last){last=pc;run=0}
+      run++;
+      if(run>=6&&(pc!==added||silent)){added=pc;silent=false;run=0;addNote(pc)}
+    }
+    requestAnimationFrame(loop);
+  })();
+}
+/* Challenge 30 jours */
+const modeOf=k=>k<=10?"facile":k<=20?"inter":"difficile";
+const labelOf=k=>k<=10?"Facile":k<=20?"Intermédiaire":"Difficile";
+function openChallenge(){chal=null;voice=null;vStop();ch.name?showChallenge():askName()}
+function askName(){
+  chal=null;showStats(false);$("pg").style.width="0";
+  $("app").innerHTML='<p class="msg">Challenge 30 jours</p><p class="sub">30 exercices, du facile au difficile. Chaque exercice comporte plusieurs manches (3 en Facile et Intermédiaire, 2 en Difficile) à réussir. L’exercice suivant s’ouvre quand tu réussis le précédent. Chaque exercice réussi te donne une attestation à télécharger. Ton nom sera écrit sur tes attestations.</p><label class="sub" for="nm">Ton nom</label><input id="nm" class="inp" maxlength="30" placeholder="Nom et prénom" autocomplete="name"><div class="row"><button class="p" id="nmok">'+(ch.name?'Enregistrer':'Commencer le challenge')+'</button><button id="nmbk">Retour</button></div><div class="fb ko" id="nmer"></div>';
+  $("nm").value=ch.name||"";
+  $("nmok").onclick=()=>{const v=$("nm").value.trim().replace(/\s+/g," ");if(v.length<2){$("nmer").textContent="Écris ton nom (2 lettres minimum).";return}ch.name=v;save();showChallenge()};
+  $("nmbk").onclick=()=>ch.name?showChallenge():home();
+}
+function showChallenge(){
+  chal=null;showStats(false);$("pg").style.width=(ch.done/30*100)+"%";
+  let g="";for(let k=1;k<=30;k++){const st=k<=ch.done?"ok":k===ch.done+1?"cur":"lock";g+='<button class="ct '+st+'" data-k="'+k+'"'+(st==="lock"?' disabled':'')+'>'+(st==="ok"?'✓<small>'+k+'</small>':st==="lock"?'🔒<small>'+k+'</small>':k)+'</button>'}
+  $("app").innerHTML='<div class="tb"><button id="cbk">← Retour</button><button id="cnm">Modifier mon nom</button><button id="crz">↺ Initialiser</button></div><p class="msg">Challenge 30 jours</p><p class="sub" id="who"></p>'+(ch.done>=30?'<div class="row"><button class="p" id="cgen">🏆 Attestation générale</button></div>':'')+'<div class="cgrid">'+g+'</div><p class="sub">Exercices 1 à 10 : Facile. 11 à 20 : Intermédiaire. 21 à 30 : Difficile. Touche un exercice réussi pour retrouver son attestation.</p>';
+  $("who").textContent=ch.name+" : "+ch.done+" / 30 exercices réussis";
+  document.querySelectorAll(".ct").forEach(b=>b.onclick=()=>{const k=+b.dataset.k;k<=ch.done?certScreen(k,true):startExercise(k)});
+  $("cnm").onclick=askName;$("cbk").onclick=home;confirmBtn($("crz"),"↺ Initialiser",()=>{ch.done=0;ch.dates={};save();showChallenge()});if($("cgen"))$("cgen").onclick=()=>{if(!ch.dates[31]){ch.dates[31]=ch.dates[30]||new Date().toISOString().slice(0,10);save()}certScreen(31,true)};
+}
+function startExercise(k){
+  const go=()=>{chal=k;mode=modeOf(k);level=k<=10?k:k<=20?k-10:k-20;round=1;tries=0;seen()?start():rules(true)};
+  if(adPlugin()&&k>=ADS.exFrom&&k>ch.done&&!exAd[k]){
+    adGate(ADS.exVideos,"Exercice "+k,"Regarde "+(ADS.exVideos>1?ADS.exVideos+" vidéos":"une courte vidéo")+" pour lancer cet exercice. Cela permet de garder l’application gratuite.",()=>{exAd[k]=1;go()},showChallenge);
+    return;
+  }
+  go();
+}
+function chalAfter(good){
+  if(good&&round<roundsOf(level)){
+    const r=document.createElement("div");r.className="row";
+    r.innerHTML='<button class="p" id="nxr" data-keep="1">Manche suivante</button>';
+    $("app").appendChild(r);$("fb").textContent="Manche "+round+" sur "+roundsOf(level)+" réussie. Encore "+(roundsOf(level)-round)+" pour valider l’exercice.";
+    $("nxr").onclick=()=>{round++;tries=0;start()};return;
+  }
+  if(good){delete exAd[chal];ch.done=Math.max(ch.done,chal);if(!ch.dates[chal])ch.dates[chal]=new Date().toISOString().slice(0,10);if(chal===30&&!ch.dates[31])ch.dates[31]=ch.dates[30];save();certScreen(chal,false);return}
+  const r=document.createElement("div");r.className="row";
+  r.innerHTML='<button class="p" id="rt" data-keep="1">Réessayer</button><button id="cb" data-keep="1">Retour au challenge</button>';
+  $("app").appendChild(r);$("rt").onclick=()=>{tries=0;start()};$("cb").onclick=showChallenge;
+}
+async function certScreen(k,fromGrid){
+  showStats(false);
+  const gen=k===31;
+  $("app").innerHTML='<p class="msg">'+(gen?'Félicitations, challenge terminé !':fromGrid?'Attestation, exercice '+k:'Bravo ! Exercice '+k+' réussi')+'</p><p class="sub">'+(gen?'Tu as réussi les 30 exercices. Voici ton attestation générale. Tu peux la télécharger maintenant, ou plus tard depuis le challenge.':'Tu peux la télécharger maintenant, ou plus tard depuis le challenge.')+'</p><img id="certimg" alt="Attestation de félicitations" style="width:100%;height:auto;aspect-ratio:1600/1130;border-radius:12px;border:1px solid var(--line);background:var(--bg)"><div class="row"><button class="p" id="dl">⬇ Télécharger</button>'+(!fromGrid&&k<30?'<button class="p" id="nxc">Suivant</button>':'')+(!fromGrid&&k===30?'<button class="p" id="gnc">🏆 Mon attestation générale</button>':'')+'<button id="bkc">Retour au challenge</button></div><div class="fb" id="cmsg"></div>';
+  $("bkc").onclick=showChallenge;if($("nxc"))$("nxc").onclick=()=>startExercise(k+1);if($("gnc"))$("gnc").onclick=()=>certScreen(31,false);
+  const cp=drawCert(k);const d=$("dl");
+  ch.adOk=ch.adOk||{};
+  const locked=!!adPlugin()&&(gen||k>=ADS.certFrom)&&!ch.adOk[k];
+  if(d&&locked)d.textContent="⬇ Télécharger ("+ADS.certVideos+" vidéo"+(ADS.certVideos>1?"s":"")+")";
+  if(d)d.onclick=async()=>{
+    if(locked){
+      adGate(ADS.certVideos,"Télécharger l’attestation","Regarde "+(ADS.certVideos>1?ADS.certVideos+" courtes vidéos":"une courte vidéo")+" pour télécharger cette attestation. Tu ne le feras qu’une seule fois pour elle.",async()=>{ch.adOk[k]=1;save();await certScreen(k,fromGrid);const b=$("dl");if(b)b.click()},()=>certScreen(k,fromGrid));
+      return;
+    }
+    d.disabled=true;try{await saveCert(await cp,k)}finally{d.disabled=false}
+  };
+  const c=await cp;const im=$("certimg");if(im)im.src=c.toDataURL("image/jpeg",.9);
+}
+async function drawCert(k){
+  const W=1600,H=1130,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
+  try{await Promise.race([document.fonts.load('800 60px Outfit'),sleep(1500)])}catch(e){}
+  const F=(w,p)=>w+" "+p+"px Outfit, system-ui, sans-serif";
+  const bg=g.createLinearGradient(0,0,W,H);bg.addColorStop(0,"#0b1f8f");bg.addColorStop(1,"#2f5bea");g.fillStyle=bg;g.fillRect(0,0,W,H);
+  g.fillStyle="#fffdf6";g.fillRect(40,40,W-80,H-80);
+  g.strokeStyle="#e0a800";g.lineWidth=8;g.strokeRect(70,70,W-140,H-140);
+  g.strokeStyle="#0b1f8f";g.lineWidth=3;g.strokeRect(90,90,W-180,H-180);
+  const img=await new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src="icons/icon-512.png"});
+  if(img)g.drawImage(img,W/2-100,115,200,200);
+  else{g.fillStyle="#e0a800";g.beginPath();g.arc(W/2,215,95,0,7);g.fill();g.fillStyle="#fff";g.font=F(800,120);g.textAlign="center";g.fillText("♪",W/2,255)}
+  g.textAlign="center";
+  if(k===31){
+    g.fillStyle="#0b1f8f";g.font=F(800,60);g.fillText("ATTESTATION GÉNÉRALE DE FÉLICITATIONS",W/2,420);
+    g.fillStyle="#5b6784";g.font=F(600,36);g.fillText("Challenge 30 jours – Oreille Musicale",W/2,480);
+    g.font=F(600,38);g.fillText("décernée à",W/2,580);
+    let sz=120;g.font=F(800,sz);while(g.measureText(ch.name).width>W-300&&sz>40){sz-=4;g.font=F(800,sz)}
+    g.fillStyle="#c98a00";g.fillText(ch.name,W/2,710);
+    g.strokeStyle="#e0a800";g.lineWidth=3;g.beginPath();g.moveTo(320,745);g.lineTo(W-320,745);g.stroke();
+    g.fillStyle="#16203a";g.font=F(600,40);g.fillText("pour avoir réussi les 30 exercices du challenge",W/2,820);
+    g.fillText("et travaillé son oreille musicale avec persévérance",W/2,875);
+    const dg=new Date((ch.dates[31]||new Date().toISOString().slice(0,10))+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+    g.fillStyle="#5b6784";g.font=F(600,32);g.fillText("Délivrée le "+dg,W/2,990);
+    g.fillStyle="#0b1f8f";g.font=F(800,34);g.fillText("30 exercices sur 30 réussis",W/2,1040);
+    return c;
+  }
+  g.fillStyle="#0b1f8f";g.font=F(800,66);g.fillText("ATTESTATION DE FÉLICITATIONS",W/2,420);
+  g.fillStyle="#5b6784";g.font=F(600,36);g.fillText("Challenge 30 jours – Oreille Musicale",W/2,480);
+  g.font=F(600,38);g.fillText("décernée à",W/2,580);
+  let size=120;g.font=F(800,size);while(g.measureText(ch.name).width>W-300&&size>40){size-=4;g.font=F(800,size)}
+  g.fillStyle="#c98a00";g.fillText(ch.name,W/2,710);
+  g.strokeStyle="#e0a800";g.lineWidth=3;g.beginPath();g.moveTo(320,745);g.lineTo(W-320,745);g.stroke();
+  g.fillStyle="#16203a";g.font=F(600,42);g.fillText("pour avoir réussi l’exercice "+k+" sur 30",W/2,830);
+  g.fillStyle="#5b6784";g.font=F(600,36);g.fillText("Niveau "+labelOf(k),W/2,885);
+  const dt=new Date((ch.dates[k]||new Date().toISOString().slice(0,10))+"T12:00:00").toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  g.font=F(600,32);g.fillText("Délivrée le "+dt,W/2,990);
+  g.fillStyle="#0b1f8f";g.font=F(800,34);g.fillText("Exercice "+k+" / 30",W/2,1040);
+  return c;
+}
+async function saveCert(c,k){
+  const fn=k===31?"Attestation-generale-Oreille-Musicale.jpg":"Attestation-Oreille-Musicale-exercice-"+k+".jpg",m=$("cmsg");
+  const say=(t,ok)=>{if(m){m.className="fb "+(ok?"ok":"ko");m.textContent=t}};
+  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));
+  if(!blob){say("Impossible de créer l’image. Réessaie.",false);return}
+  const cap=window.Capacitor;let why="";
+  /* 1. Application Android (plugins Capacitor Filesystem + Share) */
+  if(cap&&cap.isNativePlatform&&cap.isNativePlatform()){
+    try{
+      const FS=(cap.Plugins&&cap.Plugins.Filesystem)||cap.registerPlugin("Filesystem"),SH=(cap.Plugins&&cap.Plugins.Share)||cap.registerPlugin("Share");
+      const r=await FS.writeFile({path:fn,data:c.toDataURL("image/jpeg",.92).split(",")[1],directory:"CACHE"});
+      await SH.share({title:"Mon attestation",files:[r.uri]});say("Choisis où enregistrer ou envoyer ton attestation.",true);return;
+    }catch(e){
+      if(e&&/cancel|abort|dismiss/i.test(String(e.message||e)))return;
+      why=String((e&&e.message)||e);
+    }
+  }
+  /* 2. Partage du fichier par le téléphone (Enregistrer dans Fichiers/Photos, WhatsApp, etc.) */
+  try{
+    const f=new File([blob],fn,{type:"image/jpeg"});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:"Mon attestation"});say("Attestation prête.",true);return}
+  }catch(e){if(e&&e.name==="AbortError")return;why=why||String((e&&e.message)||e)}
+  /* 3. Téléchargement classique */
+  try{
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=fn;a.rel="noopener";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),10000);
+    say(cap&&cap.isNativePlatform&&cap.isNativePlatform()?"Si rien ne s’enregistre"+(why?" ("+why+")":"")+" : appuie longuement sur l’image de l’attestation, puis choisis « Télécharger l’image » ou « Enregistrer ».":"Attestation téléchargée (dossier Téléchargements). Si rien n’apparaît, appuie longuement sur l’image puis « Enregistrer l’image ».",true);
+  }catch(e){say("Téléchargement impossible"+(why?" ("+why+")":"")+". Appuie longuement sur l’image de l’attestation pour l’enregistrer.",false)}
+}
+
+/* Travaille ta voix : 30 exercices chantés avec le piano, le tempo et le métronome */
+const DEG=[0,2,4,5,7,9,11,12,14];
+const VOIX=([[0,1,2,3,4,5,6,7],[7,6,5,4,3,2,1,0],[0,1,2,3,4,5,6,7,7,6,5,4,3,2,1,0],[0,2,4],[1,3,5],[0,2,4,1,3,5],[2,4,6],[3,5,7],[4,6,8],[0,2,4,1,3,5,2,4,6,3,5,7,4,6,8],[8,6,4,7,5,3,6,4,2,5,3,1,4,2,0],[0],[0,1,0],[0,1,2,1,0],[0,1,2,3,2,1,0],[0,1,2,3,4,3,2,1,0],[0,1,2,3,4,5,4,3,2,1,0],[0,1,2,3,4,5,6,5,4,3,2,1,0],[0,1,2,3,4,5,6,7,6,5,4,3,2,1,0],[1,2,1],[1,2,3,2,1],[1,2,3,4,3,2,1],[1,2,3,4,5,4,3,2,1],[1,2,3,4,5,6,5,4,3,2,1],[1,2,3,4,5,6,7,6,5,4,3,2,1],[2,3,2],[2,3,4,3,2],[2,3,4,5,4,3,2],[2,3,4,5,6,5,4,3,2],[2,3,4,5,6,7,6,5,4,3,2],[3,4,3],[3,4,5,4,3],[3,4,5,6,5,4,3],[3,4,5,6,7,6,5,4,3],[4,5,4],[4,5,6,5,4],[4,5,6,7,6,5,4],[5,6,5],[5,6,7,6,5],[6,7,6],[7,6,7],[7,6,5,6,7],[7,6,5,4,5,6,7],[7,6,5,4,3,4,5,6,7],[7,6,5,4,3,2,3,4,5,6,7],[7,6,5,4,3,2,1,2,3,4,5,6,7],[7,6,5,4,3,2,1,0,1,2,3,4,5,6,7],[6,5,6],[6,5,4,5,6],[6,5,4,3,4,5,6],[6,5,4,3,2,3,4,5,6],[6,5,4,3,2,1,2,3,4,5,6],[6,5,4,3,2,1,0,1,2,3,4,5,6],[5,4,5],[5,4,3,4,5],[5,4,3,2,3,4,5],[5,4,3,2,1,2,3,4,5],[5,4,3,2,1,0,1,2,3,4,5],[0,2,4,2,0],[1,3,5,3,1],[2,4,6,4,2],[3,5,7,5,3],[0,2,4,7],[7,4,2,0],[0,2,4,7,4,2,0],[0,5,2,0],[1,3,4,5],[0,2,0],[0,3,0],[0,4,0],[0,5,0],[0,6,0],[0,7,0],[1,3,1],[1,4,1],[1,5,1],[1,6,1],[1,7,1],[2,4,2],[2,5,2],[2,6,2],[2,7,2],[0,0,1,1,2,2,1,1,0],[1,1,2,2,3,3,2,2,1],[2,2,3,3,4,4,3,3,2],[3,3,4,4,5,5,4,4,3],[4,4,5,5,6,6,5,5,4],[0,2,1,3,2,4,3,2,1,0],[1,3,2,4,3,5,4,3,2,1],[2,4,3,5,4,6,5,4,3,2],[3,5,4,6,5,7,6,5,4,3],[0,1,0,2,5,4,1,0],[0,1,4,1,4,5,4,3,2,1,0],[0,1,2,3,6,5,6,3,4,5,4,3,2,1,0],[0,3,1,3,6,7,4,3,2,0,2,1,0],[0,3,6,7,6,7,4,1,0,3,1,0],[0,1,4,7,4,5,6,4,7,5,3,1,0],[0,2,5,3,4,7,5,4,6,5,4,3,2,1,0],[0,1,2,1,2,5,4,3,6,5,6,5,4,2,1,0],[0,1,3,5,4,3,5,2,0,2,0]]).map(e=>e.map(x=>DEG[x]));
+const VGRP=[[1,"Gammes"],[4,"Arpèges"],[12,"Pyramides sur Do"],[20,"Pyramides sur Ré, Mi, Fa, Sol, La, Si"],[41,"Pyramides inversées (on descend d’abord)"],[59,"Arpèges et sauts"],[83,"Notes répétées et zigzags"],[92,"Mélanges : justesse et souffle"]];
+const VN=VOIX.length;
+function confirmBtn(btn,label,fn){let t=null;btn.onclick=()=>{if(t){clearTimeout(t);t=null;btn.textContent=label;fn()}else{btn.textContent="Confirmer ?";t=setTimeout(()=>{t=null;btn.textContent=label},3000)}}}
+const TONICS=['Do','Ré','Mi','Fa','Sol','La','Si'],TSEMI=[0,2,4,5,7,9,11];
+const NN=x=>NOM[((x%12)+12)%12];
+const VS={bpm:70,metro:true,mode:'avec',loop:false,tonic:0,showT:false};
+try{Object.assign(VS,JSON.parse(localStorage.getItem('om-voice')||'{}'))}catch(e){}
+if(!(VS.tonic>=0&&VS.tonic<7))VS.tonic=0;
+const vSave=()=>{try{localStorage.setItem('om-voice',JSON.stringify(VS))}catch(e){}};
+/* tonalité : on transpose, et on redescend d’une octave les tonalités aiguës pour rester confortable à chanter */
+const tOff=()=>{const t=TSEMI[VS.tonic];return t>6?t-12:t};
+const vNotes=k=>VOIX[k-1].map(x=>x+tOff());
+/* le son suit la tonalité ; les notes écrites restent en Do, sauf si l’option « écrire selon la tonalité » est activée */
+const vShown=k=>VS.showT?vNotes(k):VOIX[k-1];
+const vName=k=>vShown(k).map(NN).join(' – ');
+const tOpts=(pre='')=>TONICS.map((t,i)=>'<option value="'+i+'"'+(i===VS.tonic?' selected':'')+'>'+pre+t+'</option>').join('');
+let vRun=null;
+const NREP=5;
+const VMSG=["sur les gammes","sur les arpèges","sur la pyramide sur Do","sur les pyramides sur Ré, Mi, Fa, Sol, La et Si","sur les pyramides inversées","sur les arpèges et sauts","sur les notes répétées et les zigzags","sur les mélanges"];
+const VG=VGRP.map((g,i)=>({s:g[0],e:VGRP[i+1]?VGRP[i+1][0]-1:VN,name:g[1],msg:VMSG[i]||("dans la partie « "+g[1]+" »")}));
+const vGroupDone=g=>{for(let k=g.s;k<=g.e;k++)if(!vx.includes(k))return false;return true};
+function vCelebrate(txt){
+  const o=document.createElement("div");o.className="sheet";o.style.alignItems="center";o.style.padding="16px";
+  o.innerHTML='<div class="sheetc" role="alertdialog" aria-label="Félicitations" style="border-radius:18px;text-align:center;max-width:420px"><p style="font-size:3rem;margin:0" aria-hidden="true">🎉</p><p class="msg">Félicitations !</p><p class="sub">'+txt+'</p><div class="row" style="justify-content:center"><button class="p" id="vcel">Continuer</button></div></div>';
+  document.body.appendChild(o);$("vcel").onclick=()=>o.remove();$("vcel").focus();
+  try{[0,4,7,12].forEach((x,i)=>setTimeout(()=>tone(x),i*170))}catch(e){}
+}
+const vMsg=k=>vx.includes(k)?"✓ Exercice fait":"Répétitions : "+(vcnt[k]||0)+" / "+NREP;
+function vCount(k){
+  const was=vx.includes(k);vcnt[k]=Math.min(NREP,(vcnt[k]||0)+1);
+  const now=vcnt[k]>=NREP&&!was;if(now)vx.push(k);
+  save();const m=$("vmsg");if(m&&voice===k){m.textContent=vMsg(k);m.className="fb"+(vx.includes(k)?" ok":"")}
+  if(now){
+    const g=VG.find(x=>k>=x.s&&k<=x.e);
+    if(vx.length>=VN){vStop();vCelebrate("Bravo ! Tu as terminé les "+VN+" exercices de « Travaille ta voix ». Ta voix gagne en justesse, en précision et en souffle.")}
+    else if(g&&vGroupDone(g)){vStop();vCelebrate("Tu as réussi tous les exercices "+g.msg+". Ta voix gagne en justesse, en précision et en souffle. Continue comme ça !")}
+  }
+}
+function vStop(){
+  if(!vRun)return;const r=vRun;vRun=null;
+  r.timers.forEach(clearTimeout);
+  try{r.bus.gain.cancelScheduledValues(0);r.bus.gain.setTargetAtTime(0,ctx.currentTime,.03);setTimeout(()=>{try{r.bus.disconnect()}catch(e){}},300)}catch(e){}
+  document.querySelectorAll(".vn span").forEach(x=>x.classList.remove("on"));const b=$("beat");if(b)b.classList.remove("on");
+  const pl=$("vpl");if(pl){pl.textContent="▶ Jouer";pl.classList.add("p")}
+}
+function vPlay(){
+  if(vRun){vStop();return}
+  audio();const kk=voice,notes=vNotes(kk),n=notes.length,B=()=>60/VS.bpm;
+  const bus=ctx.createGain();bus.connect(master);
+  const run={bus,timers:[],done:false};vRun=run;
+  const pl=$("vpl");pl.textContent="■ Arrêter";pl.classList.remove("p");
+  const at=(t,fn)=>run.timers.push(setTimeout(()=>{if(vRun===run)fn()},Math.max(0,(t-ctx.currentTime)*1000)));
+  const chips=[...document.querySelectorAll(".vn span")];
+  const beatDot=()=>{const b=$("beat");if(!b)return;b.classList.add("on");setTimeout(()=>b.classList.remove("on"),90)};
+  let first=true;
+  function cycle(t0){
+    const b=B();let t=t0;
+    if(first){if(VS.metro)for(let i=0;i<2;i++){click(t+i*b,false,bus);at(t+i*b,beatDot)}t+=2*b}
+    const rest=VS.mode==="tour"?n:2,total=n+rest;
+    for(let i=0;i<total;i++){
+      const tt=t+i*b;
+      if(VS.metro){click(tt,i%4===0,bus);at(tt,beatDot)}
+      if(i<n){piano(notes[i],tt,b*.92,bus);at(tt,()=>chips.forEach((c,k)=>c.classList.toggle("on",k===i)))}
+      else if(i===n)at(tt,()=>chips.forEach(c=>c.classList.remove("on")));
+    }
+    const endNotes=t+n*b,endCycle=t+total*b;
+    at(endNotes,()=>vCount(kk));
+    first=false;
+    if(VS.loop){at(endCycle-.35,()=>cycle(endCycle))}
+    else at(endCycle,()=>vStop());
+  }
+  cycle(ctx.currentTime+.15);
+}
+function showVoice(){
+  chal=null;voice=null;vStop();stopMic();timerStop();showStats(false);$("pg").style.width=(vx.length/VN*100)+"%";
+  let l="";for(let k=1;k<=VN;k++){const g=VGRP.find(x=>x[0]===k);if(g){const G=VG.find(x=>x.s===k),dn=vx.filter(n=>n>=G.s&&n<=G.e).length;l+='<p class="sub" style="margin:10px 0 0;font-weight:800">'+g[1]+' · '+(dn===G.e-G.s+1?'✓ Terminé':dn+' / '+(G.e-G.s+1))+'</p>'}l+='<button class="mode" data-v="'+k+'"><b>'+k+'. '+vName(k)+'</b><em>'+(vx.includes(k)?'✓ Fait':vcnt[k]?vcnt[k]+' / '+NREP+' répétitions':'À chanter')+'</em></button>'}
+  $("app").innerHTML='<div class="tb"><button id="vbk2">← Retour</button><button id="vrz">↺ Initialiser</button><button id="vset" aria-haspopup="dialog">⚙ Paramètres</button></div><p class="msg">Travaille ta voix</p>'
+  +'<p class="sub" id="vinfo"></p><p class="sub">'+vx.length+' / '+VN+' exercices faits. Les paramètres s’appliquent à tous les exercices. Le piano joue, tu chantes avec lui pour travailler la justesse, la précision et le souffle.</p><div class="modes">'+l+'</div>'
+  +'<div class="sheet" id="vsheet" hidden><div class="sheetc" role="dialog" aria-label="Paramètres"><p class="msg">Paramètres</p><p class="sub">Ces réglages s’appliquent à tous les exercices.</p>'
+  +'<div class="vc"><label for="vtsel"><span>Tonalité principale (le son du piano)</span></label><select class="inp" id="vtsel">'+tOpts()+'</select></div>'
+  +'<div class="seg"><button id="vshow"></button></div>'
+  +'<div class="vc"><label for="vbpm"><span>Tempo <b id="vbv">'+VS.bpm+'</b> pulsations/min</span></label>'
+  +'<div class="vt"><button id="vm" aria-label="Plus lent">−</button><input type="range" id="vbpm" min="40" max="160" step="2" value="'+VS.bpm+'"><button id="vpp" aria-label="Plus rapide">+</button></div></div>'
+  +'<div class="vc"><label for="vvol"><span>Volume <b id="vvv">'+Math.round(vol*100)+'</b> %</span></label>'
+  +'<div class="vt"><button id="vvm" aria-label="Moins fort">🔉</button><input type="range" id="vvol" min="0" max="100" step="5" value="'+Math.round(vol*100)+'"><button id="vvp" aria-label="Plus fort">🔊</button></div></div>'
+  +'<div class="seg"><button id="vmet"></button><button id="vloop"></button></div>'
+  +'<div class="seg" style="margin-top:8px"><button id="vm1">Chante avec moi</button><button id="vm2">À tour de rôle</button></div>'
+  +'<div class="row"><button class="p" id="vsc">Terminer</button></div></div></div>';
+  const refresh=()=>{$("vinfo").textContent="Tonalité "+TONICS[VS.tonic]+" · Tempo "+VS.bpm+" · Métronome "+(VS.metro?"activé":"coupé");$("vtsel").value=VS.tonic;$("vshow").textContent="Écrire les notes selon la tonalité : "+(VS.showT?"oui":"non (restent en Do)");$("vshow").classList.toggle("sel",VS.showT);
+    $("vmet").textContent="Métronome : "+(VS.metro?"activé":"coupé");$("vloop").textContent="Boucle : "+(VS.loop?"oui":"non");
+    $("vm1").classList.toggle("sel",VS.mode==="avec");$("vm2").classList.toggle("sel",VS.mode==="tour");
+    document.querySelectorAll(".mode[data-v] b").forEach(e=>{const k=+e.parentNode.dataset.v;e.textContent=k+". "+vName(k)})};
+  refresh();
+  const setB=v=>{VS.bpm=Math.min(160,Math.max(40,Math.round(v)));$("vbpm").value=VS.bpm;$("vbv").textContent=VS.bpm;vSave();refresh()};
+  const setV=v=>{v=Math.min(100,Math.max(0,v));$("vvol").value=v;$("vvv").textContent=v;setVol(v/100)};
+  $("vset").onclick=()=>{$("vsheet").hidden=false};
+  $("vsc").onclick=()=>{$("vsheet").hidden=true};
+  $("vsheet").onclick=e=>{if(e.target.id==="vsheet")$("vsheet").hidden=true};
+  $("vtsel").onchange=e=>{VS.tonic=+e.target.value;vSave();refresh()};
+  $("vshow").onclick=()=>{VS.showT=!VS.showT;vSave();refresh()};
+  $("vbpm").oninput=e=>setB(+e.target.value);$("vm").onclick=()=>setB(VS.bpm-4);$("vpp").onclick=()=>setB(VS.bpm+4);
+  $("vvol").oninput=e=>setV(+e.target.value);$("vvm").onclick=()=>setV(+$("vvol").value-10);$("vvp").onclick=()=>setV(+$("vvol").value+10);
+  $("vmet").onclick=()=>{VS.metro=!VS.metro;vSave();refresh()};
+  $("vloop").onclick=()=>{VS.loop=!VS.loop;vSave();refresh()};
+  $("vm1").onclick=()=>{VS.mode="avec";vSave();refresh()};
+  $("vm2").onclick=()=>{VS.mode="tour";vSave();refresh()};
+  document.querySelectorAll(".mode[data-v]").forEach(b=>b.onclick=()=>startVoice(+b.dataset.v));
+  $("vbk2").onclick=home;
+  confirmBtn($("vrz"),"↺ Initialiser",()=>{vx=[];vcnt={};save();showVoice()});
+}
+function startVoice(k){
+  vStop();chal=null;voice=k;showStats(false);$("pg").style.width=((k-1)/VN*100)+"%";
+  $("app").innerHTML='<p class="msg" style="margin:0">Exercice '+k+' / '+VN+'<i class="beat" id="beat" title="Métronome"></i></p>'
+  +'<p class="sub" id="vinf">Tonalité '+TONICS[VS.tonic]+' · Tempo '+VS.bpm+' · Métronome '+(VS.metro?'activé':'coupé')+' (autres réglages dans « Travaille ta voix »)</p>'
+  +'<p class="sub">Appuie sur Jouer, puis chante les notes en même temps que le piano. Répète l’exercice 5 fois pour le valider. Respire calmement entre les phrases.</p>'
+  +'<div class="vn" id="vn" aria-label="Notes de l’exercice">'+vShown(k).map(x=>'<span>'+NN(x)+'</span>').join("")+'</div>'
+  +'<div class="vrow"><select class="inp" id="vtsel2" aria-label="Tonalité (le son du piano)">'+tOpts('Tonalité ')+'</select><button class="p" id="vpl">▶ Jouer</button></div>'
+  +'<div class="fb'+(vx.includes(k)?' ok':'')+'" id="vmsg" aria-live="polite">'+vMsg(k)+'</div>'
+  +'<div class="row">'+(k>1?'<button id="vpr">Précédent</button>':'')+(k<VN?'<button class="p" id="vnx">Suivant</button>':'')+'<button id="vls">Retour aux exercices</button></div>';
+  $("vpl").onclick=vPlay;
+  $("vtsel2").onchange=e=>{VS.tonic=+e.target.value;vSave();vStop();$("vn").innerHTML=vShown(k).map(x=>'<span>'+NN(x)+'</span>').join("");$("vinf").textContent="Tonalité "+TONICS[VS.tonic]+" · Tempo "+VS.bpm+" · Métronome "+(VS.metro?"activé":"coupé")+" (autres réglages dans « Travaille ta voix »)"};
+  if($("vnx"))$("vnx").onclick=()=>startVoice(k+1);if($("vpr"))$("vpr").onclick=()=>startVoice(k-1);
+  $("vls").onclick=showVoice;
+}
+let rt=null;
+$("rst").onclick=()=>{const b=$("rst");
+  if(rt){clearTimeout(rt);rt=null;b.textContent="↺";timerStop();over=true;vStop();chal=null;voice=null;level=1;levels={};score=0;round=1;tries=0;ch.done=0;ch.dates={};vx=[];vcnt={};save();home()}
+  else{b.textContent="Confirmer ?";rt=setTimeout(()=>{rt=null;b.textContent="↺"},3000)}};
+$("hm").onclick=()=>{epoch++;timerStop();over=true;busy=false;try{stopMic()}catch(e){}vStop();if(rt){clearTimeout(rt);rt=null;$("rst").textContent="↺"}home()};
+["openChallenge","showChallenge","showVoice","startExercise","start","rules"].forEach(n=>{const f=window[n];if(typeof f!=="function")return;window[n]=function(){bannerHide();return f.apply(this,arguments)}});
+{const h=window.home;window.home=function(){const r=h.apply(this,arguments);bannerShow();return r}}
+{const sv=window.startVoice,vAd={};window.startVoice=function(k){
+  if(adPlugin()&&k>=ADS.voiceFrom&&(k-ADS.voiceFrom)%ADS.voiceEvery===0&&!vx.includes(k)&&!vAd[k]){
+    vStop();showStats(false);
+    adGate(ADS.voiceVideos,"Exercice "+k,"Regarde "+(ADS.voiceVideos>1?ADS.voiceVideos+" vidéos":"une courte vidéo")+" pour lancer cet exercice. Cela permet de garder l’application gratuite.",()=>{vAd[k]=1;sv(k)},showVoice);
+    return;
+  }
+  return sv(k);
+}}
+adInit();
+home();
+if('serviceWorker' in navigator)window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
+</script>
+</body>
+</html>
